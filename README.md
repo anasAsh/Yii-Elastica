@@ -48,6 +48,8 @@ the aim of this componenets is to create a dataprovider that can be used  with a
     $data = $dataprovider->getData();
       
 ```
+type name will be used ad the model name by default, if type name was not provided, the data provider will try to use the index name as a model name.
+
 
 for more info about using elastica PHP library please read the documentation here:
 [ ruflin/Elastica](https://github.com/ruflin/Elastica)

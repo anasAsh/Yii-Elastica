@@ -1,7 +1,7 @@
 Yii-Elastica
 ============
 
-a Yii application component, Dataprovider and autoloader, to use Elastica PHP library inside Yii.
+a Yii application component, Dataprovider and autoloader, to use Elastica PHP library inside Yii framework.
 the aim of this componenets is to create a dataprovider that can be used  with all other Yii extesions or widgets (ex: CGridView).
 
 ### Main connfigrations

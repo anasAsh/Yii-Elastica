@@ -13,11 +13,10 @@ class ElasticaDataProvider extends CDataProvider{
   protected $type;
 
 
-  public function __construct($index, $query, $config, $type=null) {
-    if (!$type) {
-      $type = $index;
-    }
-
+   public function __construct($index, $query, $config, $type=null) {
+     if (!$type) {
+       $type = $index;
+     }
     $this->type = strtolower($type);
     $this->setId($type);
     $this->_elastica_query = $query;
@@ -45,36 +44,32 @@ class ElasticaDataProvider extends CDataProvider{
           $order = 'desc';
           $name = str_replace('.desc', '', $attr);
         }
+        
         $this->_elastica_query->setSort(array(
           $name=>array('order' => $order, 'mode' => 'max'),
 
         ));
       }
+      
     }
     if (($order = $sort->getOrderBy()) != '') {
       $order_array = explode(' ', $order);
       $name  = $order_array[0] ;
+      $name = str_replace('[', '.', $name);
+      $name = str_replace(']', '', $name);
       $descending = isset($order_array[1]) ? 'desc' : 'asc';
       $this->_elastica_query->setSort(array(
-        $name.'.untouched'=>array('order' => $descending, 'mode' => 'max'),
+        $name=>array('order' => $descending, 'mode' => 'max'),
 
       ));
     }
 
-    $this->_count = $this->_elastica_index->count($this->_elastica_query);
-    Yii::log("elastic count :".$this->_count);
     if (($pagination = $this->getPagination()) !== false) {
       $limit = $pagination->pageSize;
       $current_page = Yii::app()->request->getParam($this->getPagination()->pageVar, 0);
       $current_page++;
 
       $skip = --$current_page * $limit;
-
-      if ($skip >= $this->_count) {
-        $skip = 0;
-        $this->getPagination()->setCurrentPage(0);
-      }
-
       $this->_elastica_query->setLimit($limit);
       $this->_elastica_query->setFrom($skip);
     } else {
@@ -82,6 +77,13 @@ class ElasticaDataProvider extends CDataProvider{
     }
 
     $this->_elastica_result_set = $this->_elastica_index->search($this->_elastica_query);
+    $this->_count = $this->_elastica_result_set->getTotalHits();
+
+    if ($skip >= $this->_count) {
+      $this->_elastica_query->setFrom(0);
+      $this->getPagination()->setCurrentPage(0);
+      $this->_elastica_result_set = $this->_elastica_index->search($this->_elastica_query);
+    }
 
     if (($pagination = $this->getPagination()) !== false) {
       $pagination->setItemCount($this->getTotalItemCount());
@@ -113,7 +115,7 @@ class ElasticaDataProvider extends CDataProvider{
 
   public function getPageCount() {
     $pagination = $this->getPagination();
-    return ceil($this->calculateTotalItemCount()/$pagination->pageSize);
+    return ceil($this->_count/$pagination->pageSize);
   }
 
   public function getCurrentPage() {

@@ -66,8 +66,9 @@ class ElasticaDataProvider extends CDataProvider{
 
     if (($pagination = $this->getPagination()) !== false) {
       $limit = $pagination->pageSize;
-      $current_page = Yii::app()->request->getParam($this->getPagination()->pageVar, 0);
-      $current_page++;
+      $current_page = Yii::app()->request->getParam($this->getPagination()->pageVar, 1);
+      
+      $current_page = $current_page < 2 ? 1 : $current_page;
 
       $skip = --$current_page * $limit;
       $this->_elastica_query->setLimit($limit);
